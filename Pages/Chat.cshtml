@@ -1,0 +1,34 @@
+@page
+@model ChatModel
+@{
+    ViewData["Title"] = "Chat Bot";
+}
+
+<div class="chat-container">
+    <h2>Chat with Bot</h2>
+    <div class="chat-box" id="chatBox">
+        @if (Model.Messages != null)
+        {
+            foreach (var msg in Model.Messages)
+            {
+                <div class="@(msg.IsUser ? "user-msg" : "bot-msg")">
+                    <strong>@(msg.IsUser ? "You" : "Bot"):</strong> @msg.Text
+                </div>
+            }
+        }
+    </div>
+    <form method="post" class="chat-form">
+        <input type="text" name="UserMessage" value="" autocomplete="off" placeholder="Type your message..." required />
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<style>
+    .chat-container { max-width: 500px; margin: 40px auto; border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #fafafa; }
+    .chat-box { min-height: 200px; max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
+    .user-msg { text-align: right; color: #1976d2; margin-bottom: 8px; }
+    .bot-msg { text-align: left; color: #388e3c; margin-bottom: 8px; }
+    .chat-form { display: flex; gap: 8px; }
+    .chat-form input[type=text] { flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
+    .chat-form button { padding: 6px 16px; border-radius: 4px; border: none; background: #1976d2; color: #fff; }
+</style>

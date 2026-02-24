@@ -1,7 +1,9 @@
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<QuotationSystem.DbHelper>();
 
 var app = builder.Build();
 

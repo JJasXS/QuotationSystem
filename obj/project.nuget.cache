@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "e08uaQBp99k=",
+  "dgSpecHash": "Wm4uO2JSxlU=",
   "success": true,
   "projectFilePath": "C:\\Users\\sd01\\QuotationSystem\\QuotationSystem.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\sd01\\.nuget\\packages\\firebirdsql.data.firebirdclient\\10.3.4\\firebirdsql.data.firebirdclient.10.3.4.nupkg.sha512"
+  ],
   "logs": []
 }
