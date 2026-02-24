@@ -2,33 +2,166 @@
 @model ChatModel
 @{
     ViewData["Title"] = "Chat Bot";
+    var chatTitles = TempData["Chats"] as List<string> ?? new List<string>();
 }
 
-<div class="chat-container">
-    <h2>Chat with Bot</h2>
-    <div class="chat-box" id="chatBox">
-        @if (Model.Messages != null)
-        {
-            foreach (var msg in Model.Messages)
+<div class="chat-layout">
+    <aside class="chat-sidebar">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0;">Chats</h3>
+            <button type="button" id="openNewChatModal" class="new-chat-btn" title="Add new chat">+</button>
+        </div>
+        <ul class="chat-list">
+            @foreach (var chat in chatTitles)
             {
-                <div class="@(msg.IsUser ? "user-msg" : "bot-msg")">
-                    <strong>@(msg.IsUser ? "You" : "Bot"):</strong> @msg.Text
-                </div>
+                <li><a href="#">@chat</a></li>
             }
-        }
-    </div>
-    <form method="post" class="chat-form">
-        <input type="text" name="UserMessage" value="" autocomplete="off" placeholder="Type your message..." required />
-        <button type="submit">Send</button>
-    </form>
+        </ul>
+        <!-- Modal for new chat title -->
+        <div id="newChatModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:24px 18px; border-radius:8px; min-width:300px; box-shadow:0 2px 16px #0002;">
+                <form method="post" asp-page-handler="AddChat" id="newChatForm">
+                    <label for="NewChatTitle" style="font-weight:500;">Chat Title:</label>
+                    <input type="text" name="NewChatTitle" id="NewChatTitle" placeholder="Enter chat title..." required style="margin:8px 0; width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;" />
+                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        <button type="button" id="cancelNewChat" style="background:#eee; border:none; border-radius:4px; padding:6px 14px;">Cancel</button>
+                        <button type="submit" style="background:#388e3c; color:#fff; border:none; border-radius:4px; padding:6px 14px;">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <main class="chat-main" style="width:100%;">
+        <div class="chat-tabs-bar" style="display:flex; align-items:center; border-bottom:1.5px solid #ccc; margin-bottom:18px;">
+            <div style="flex:1; display:flex; gap:2px;">
+                @for (int i = 0; i < chatTitles.Count; i++)
+                {
+                    <button type="button" class="chat-tab @(i == 0 ? "active" : "")" style="padding:8px 18px; border:none; border-bottom:2.5px solid transparent; background:none; font-size:1em; cursor:pointer; border-radius:8px 8px 0 0; margin-right:2px; font-weight:500; outline:none; transition:background 0.2s;">@chatTitles[i]</button>
+                }
+            </div>
+            <button type="button" id="openNewChatModal" class="new-chat-btn" title="Add new chat" style="margin-left:8px; font-size:1.3em; background:#388e3c; color:#fff; border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center;">+</button>
+        </div>
+        <!-- Modal for new chat title -->
+        <div id="newChatModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:24px 18px; border-radius:8px; min-width:300px; box-shadow:0 2px 16px #0002;">
+                <form method="post" asp-page-handler="AddChat" id="newChatForm">
+                    <label for="NewChatTitle" style="font-weight:500;">Chat Title:</label>
+                    <input type="text" name="NewChatTitle" id="NewChatTitle" placeholder="Enter chat title..." required style="margin:8px 0; width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;" />
+                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        <button type="button" id="cancelNewChat" style="background:#eee; border:none; border-radius:4px; padding:6px 14px;">Cancel</button>
+                        <button type="submit" style="background:#388e3c; color:#fff; border:none; border-radius:4px; padding:6px 14px;">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="chat-container">
+            <div class="chat-box" id="chatBox">
+                @if (Model.Messages != null)
+                {
+                    foreach (var msg in Model.Messages)
+                    {
+                        <div class="@(msg.IsUser ? "user-msg" : "bot-msg")">
+                            <strong>@(msg.IsUser ? "You" : "Bot"):</strong> @msg.Text
+                        </div>
+                    }
+                }
+            </div>
+            <form method="post" class="chat-form">
+                <input type="text" name="UserMessage" value="" autocomplete="off" placeholder="Type your message..." required />
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </main>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var openBtn = document.getElementById('openNewChatModal');
+        var modal = document.getElementById('newChatModal');
+        var cancelBtn = document.getElementById('cancelNewChat');
+        var input = document.getElementById('NewChatTitle');
+        var form = document.getElementById('newChatForm');
+
+        openBtn.addEventListener('click', function() {
+            modal.style.display = 'flex';
+            setTimeout(function() { input.focus(); }, 100);
+        });
+        cancelBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            input.value = '';
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                input.value = '';
+            }
+        });
+        form.addEventListener('submit', function() {
+            modal.style.display = 'none';
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+                input.value = '';
+            }
+        });
+    });
+</script>
 <style>
-    .chat-container { max-width: 500px; margin: 40px auto; border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #fafafa; }
-    .chat-box { min-height: 200px; max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
-    .user-msg { text-align: right; color: #1976d2; margin-bottom: 8px; }
-    .bot-msg { text-align: left; color: #388e3c; margin-bottom: 8px; }
-    .chat-form { display: flex; gap: 8px; }
-    .chat-form input[type=text] { flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
-    .chat-form button { padding: 6px 16px; border-radius: 4px; border: none; background: #1976d2; color: #fff; }
+    .chat-layout { display: flex; max-width: 1100px; margin: 40px auto; }
+    .chat-sidebar { width: 220px; background: #f3f3f3; border-radius: 8px 0 0 8px; padding: 24px 16px; border: 1px solid #ccc; border-right: none; }
+    .chat-sidebar h3 { margin-top: 0; }
+    .chat-list { list-style: none; padding: 0; margin-bottom: 18px; }
+    .chat-list li { margin-bottom: 10px; }
+    .chat-list a { text-decoration: none; color: #1976d2; font-weight: 500; }
+    .chat-list a:hover { text-decoration: underline; }
+    .new-chat-form { display: flex; gap: 6px; }
+    .new-chat-form input[type=text] { flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; }
+    .new-chat-form button { padding: 6px 14px; border-radius: 4px; border: none; background: #388e3c; color: #fff; font-size: 1em; }
+    .chat-main { flex: 1; background: #fafafa; border-radius: 0 8px 8px 0; border: 1px solid #ccc; border-left: none; padding: 28px; }
+    .chat-container { max-width: 700px; margin: 0 auto; }
+    .chat-box { min-height: 400px; max-height: 600px; overflow-y: auto; margin-bottom: 18px; font-size: 1.15em; }
+    .user-msg { text-align: right; color: #1976d2; margin-bottom: 10px; }
+    .bot-msg { text-align: left; color: #388e3c; margin-bottom: 10px; }
+    .chat-form { display: flex; gap: 10px; }
+    .chat-form input[type=text] { flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; }
+    .chat-form button { padding: 10px 24px; border-radius: 4px; border: none; background: #1976d2; color: #fff; font-size: 1em; }
+    .chat-tabs-bar {
+        background: #f3f3f3;
+        border-radius: 8px 8px 0 0;
+        padding: 0 0 0 8px;
+    }
+    .chat-tab {
+        border-bottom: 2.5px solid transparent;
+        background: none;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 8px 8px 0 0;
+        margin-right: 2px;
+        font-weight: 500;
+        outline: none;
+        transition: background 0.2s, border-bottom 0.2s;
+    }
+    .chat-tab.active, .chat-tab:focus {
+        background: #fff;
+        border-bottom: 2.5px solid #388e3c;
+        color: #388e3c;
+    }
+    .new-chat-btn {
+        margin-left: 8px;
+        font-size: 1.3em;
+        background: #388e3c;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .new-chat-btn:hover {
+        background: #2e7031;
+    }
 </style>
