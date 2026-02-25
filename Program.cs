@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton<QuotationSystem.DbHelper>();
 builder.Services.AddSingleton<QuotationSystem.Services.DbInitializer>();
+builder.Services.AddScoped<QuotationSystem.Services.ItemSearchService>();
 
 var app = builder.Build();
 

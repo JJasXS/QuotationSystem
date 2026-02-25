@@ -1,0 +1,49 @@
+@model QuotationSystem.Pages.ChatModel
+
+<div id="chatContent">
+    @if (Model.Step == "AskSearchMode")
+    {
+        <div class="bot-msg"><strong>Bot:</strong> Do you want to search by Category (StockGroup) or by Name (Description)?</div>
+        <div class="bot-options">
+            <form id="chooseModeStockGroup" data-handler="ChooseMode">
+                <input type="hidden" name="SelectedMode" value="StockGroup" />
+                <button type="button" class="option-btn" onclick="ajaxChatGet('ChooseMode', {SelectedMode:'StockGroup'})">StockGroup</button>
+            </form>
+            <form id="chooseModeDescription" data-handler="ChooseMode">
+                <input type="hidden" name="SelectedMode" value="Description" />
+                <button type="button" class="option-btn" onclick="ajaxChatGet('ChooseMode', {SelectedMode:'Description'})">Description</button>
+            </form>
+        </div>
+    }
+    else if (Model.Step == "AskStockGroup")
+    {
+        <div class="bot-msg"><strong>Bot:</strong> Please choose a category:</div>
+        <div class="bot-options">
+            @foreach (var group in Model.StockGroups)
+            {
+                <form class="chooseStockGroupForm" data-handler="ChooseStockGroup" style="display:inline;">
+                    <input type="hidden" name="SelectedStockGroup" value="@group" />
+                    <button type="button" class="option-btn" onclick="ajaxChatGet('ChooseStockGroup', {SelectedStockGroup:'@group'})">@group</button>
+                </form>
+            }
+        </div>
+    }
+    else if (Model.Step == "AskKeyword")
+    {
+        <div class="bot-msg"><strong>Bot:</strong> Please enter a keyword for item name:</div>
+        <form id="enterKeywordForm" class="chat-form" data-handler="EnterKeyword">
+            <input type="text" name="Keyword" value="" autocomplete="off" placeholder="Type keyword..." required />
+            <button type="submit">Search</button>
+        </form>
+    }
+    else if (Model.Step == "ShowProducts")
+    {
+        <div class="bot-msg"><strong>Bot:</strong> Top matches:</div>
+        <ul>
+            @foreach (var p in Model.Products)
+            {
+                <li>@p.Code - @p.Description (@p.StockGroup) Price: @(p.StockValue.HasValue ? p.StockValue.Value.ToString("F2") : "not set")</li>
+            }
+        </ul>
+    }
+</div>

@@ -19,35 +19,35 @@ namespace QuotationSystem.Services
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
 
-            string sql = @"
-SELECT i.CODE, i.DESCRIPTION, i.STOCKGROUP, p.UOM, p.STOCKVALUE
-FROM ST_ITEM i
-LEFT JOIN (
-    SELECT p.CODE, p.UOM, p.STOCKVALUE, p.DTLKEY
-    FROM ST_ITEM_PRICE p
-    WHERE (p.DATEFROM IS NULL OR p.DATEFROM <= CURRENT_DATE)
-      AND (p.DATETO IS NULL OR p.DATETO >= CURRENT_DATE)
-      AND p.DTLKEY = (
-        SELECT FIRST 1 p2.DTLKEY
-        FROM ST_ITEM_PRICE p2
-        WHERE p2.CODE = p.CODE
-          AND (p2.DATEFROM IS NULL OR p2.DATEFROM <= CURRENT_DATE)
-          AND (p2.DATETO IS NULL OR p2.DATETO >= CURRENT_DATE)
-        ORDER BY p2.DATEFROM DESC NULLS LAST, p2.SEQ DESC, p2.DTLKEY DESC
-      )
-) p ON p.CODE = i.CODE
-WHERE i.ISACTIVE = 1
-";
+                        string sql = @"
+            SELECT i.CODE, i.DESCRIPTION, i.STOCKGROUP, p.UOM, p.STOCKVALUE
+            FROM ST_ITEM i
+            LEFT JOIN (
+                    SELECT p.CODE, p.UOM, p.STOCKVALUE, p.DTLKEY
+                    FROM ST_ITEM_PRICE p
+                    WHERE (p.DATEFROM IS NULL OR p.DATEFROM <= CURRENT_DATE)
+                        AND (p.DATETO IS NULL OR p.DATETO >= CURRENT_DATE)
+                        AND p.DTLKEY = (
+                            SELECT FIRST 1 p2.DTLKEY
+                            FROM ST_ITEM_PRICE p2
+                            WHERE p2.CODE = p.CODE
+                                AND (p2.DATEFROM IS NULL OR p2.DATEFROM <= CURRENT_DATE)
+                                AND (p2.DATETO IS NULL OR p2.DATETO >= CURRENT_DATE)
+                            ORDER BY p2.DATEFROM DESC NULLS LAST, p2.SEQ DESC, p2.DTLKEY DESC
+                        )
+            ) p ON p.CODE = i.CODE
+            WHERE i.ISACTIVE = true
+            ";
 
             if (request.SearchMode == "StockGroup" && !string.IsNullOrEmpty(request.StockGroup))
             {
-                sql += " AND i.STOCKGROUP = @stockGroup";
-                cmd.Parameters.AddWithValue("@stockGroup", request.StockGroup);
+                sql += " AND UPPER(i.STOCKGROUP) = @stockGroup";
+                cmd.Parameters.AddWithValue("@stockGroup", request.StockGroup.ToUpper());
             }
             else if (request.SearchMode == "Description" && !string.IsNullOrEmpty(request.Keyword))
             {
-                sql += " AND i.DESCRIPTION LIKE @keyword";
-                cmd.Parameters.AddWithValue("@keyword", "%" + request.Keyword + "%");
+                sql += " AND UPPER(i.DESCRIPTION) LIKE @keyword";
+                cmd.Parameters.AddWithValue("@keyword", "%" + request.Keyword.ToUpper() + "%");
             }
 
             sql += " ROWS " + (request.Limit > 0 ? request.Limit : 8);

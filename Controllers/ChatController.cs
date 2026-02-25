@@ -16,7 +16,16 @@ public class ChatController : ControllerBase
     [HttpPost("message")]
     public IActionResult PostMessage([FromBody] ChatMessageRequest request)
     {
-        var response = _chatbotService.HandleMessage(request);
-        return Ok(response);
+        try
+        {
+            var response = _chatbotService.HandleMessage(request);
+            if (response == null)
+                return BadRequest(new { reply = "Bot error: No response." });
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { reply = "Bot error: " + ex.Message });
+        }
     }
 }
