@@ -112,6 +112,34 @@ namespace QuotationSystem.Pages
             BotOptions.Clear();
             return Page();
         }
+
+        public IActionResult OnGetBackToSearchMode()
+        {
+            Step = "AskSearchMode";
+            BotOptions = new List<string> { "StockGroup", "Description" };
+            return Partial("_ChatPartial", this);
+        }
+
+        public IActionResult OnGetGetStockGroups()
+        {
+            // Fetch distinct stock group values from ST_ITEM.STOCKGROUP
+            var stockGroups = new List<string>();
+            using (var conn = _itemSearchService.GetConnection())
+            {
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT DISTINCT STOCKGROUP FROM ST_ITEM ORDER BY STOCKGROUP";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            stockGroups.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            return new JsonResult(stockGroups);
+        }
     }
 
     public class ChatMessage

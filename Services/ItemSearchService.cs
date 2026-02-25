@@ -68,5 +68,10 @@ namespace QuotationSystem.Services
             }
             return results;
         }
+
+        public FirebirdSql.Data.FirebirdClient.FbConnection GetConnection()
+        {
+            return _db.GetConnection();
+        }
     }
 }
